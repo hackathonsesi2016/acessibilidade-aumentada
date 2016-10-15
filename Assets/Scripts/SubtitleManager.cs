@@ -1,110 +1,174 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
-		
+using System.Collections.Generic;
+
 public class SubtitleManager : MonoBehaviour
 {
-    public static readonly string startMessage = "Seu filme vai começar";
+    private const string startMessage = "Seu filme vai começar";
+    private string subtitlesPath;
 
-	public Text subtitleText, messageText;
-    public RectTransform messageArea;
-	public string [] bancolegenda;
+    [SerializeField]
+    private string subtitlesFilename;
+
+    [SerializeField]
+    private MessageController messageController;
+
+    [SerializeField]
+    private Text subtitleText;    
+
+    [SerializeField]
+    public List<SubtitleBlock> subtitleBlockList;
 
 	private double clock;
-	private bool playSubtitles = false;
+    private int currentBlock;
+
+    [SerializeField]
+    private bool playSubtitles = false;
+
+    private bool waitingForNextBlock = false;
 
 	private void SetSubtitleText(string text)
     {
         subtitleText.text = text;
     }
 
-    private void InitializeSubtitlePlayer()
+    private void ResetSubtitlePlayer()
     {
         clock = 0;
+        currentBlock = 0;
         SetSubtitleText(string.Empty);        
     }
 
-	void Update ()
+    private void FindCurrentSubtitleBlock()
+    {
+        for (int i = 0; i < subtitleBlockList.Count; i++)
+        {
+            if(clock >= subtitleBlockList[i].StartTime)
+            {
+                continue;
+            }
+            else
+            {
+                if (clock <= subtitleBlockList[i - 1].EndTime)
+                {
+                    currentBlock = i - 1;
+                }
+                else
+                    currentBlock = i;
+            }
+        }
+    }
+
+    private void StartSubtitleBlockCreation(string filename)
+    {
+        string path = subtitlesPath + filename;
+
+        WWW subtitlesFile = new WWW(path);
+
+        StartCoroutine(WaitSubFileToCreateSubBlocks(subtitlesFile, path));        
+    }
+
+    private void CreateSubtitleBlocks(WWW subtitlesFile, string path)
+    {
+        string[] blocks;
+
+        if(string.IsNullOrEmpty(subtitlesFile.error))
+        {
+            blocks = SrtParser.GetSubtitleBlocks(subtitlesFile.text);
+
+            foreach(string blockText in blocks)
+            {
+                double[] times = SrtParser.GetSubtitleTimes(blockText);
+                string text = SrtParser.GetSubtitleText(blockText);
+
+                SubtitleBlock block = new SubtitleBlock(text, times[0], times[1]);
+
+                subtitleBlockList.Add(block);
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Subtitle not found at path: " + path);
+            Debug.LogWarning(subtitlesFile.error);
+        }
+    }
+
+    private IEnumerator WaitSubFileToCreateSubBlocks(WWW www, string path)
+    {
+        while(!www.isDone)
+        {
+            yield return null;
+        }
+
+        CreateSubtitleBlocks(www, path);
+    }
+
+    void Update ()
     {
         if (playSubtitles)
         {
             clock += Time.deltaTime;
 
-            if (clock >= 0.5f && clock <= 0.1f)
+            if (currentBlock < subtitleBlockList.Count)
             {
-                SetSubtitleText(bancolegenda[0]);
-            }
+                if (clock >= subtitleBlockList[currentBlock].StartTime && !subtitleBlockList[currentBlock].shown)
+                {
+                    SetSubtitleText(subtitleBlockList[currentBlock].Text);
 
-            if (clock >= 1.1f && clock <= 4f)
-            {
-                SetSubtitleText(bancolegenda[1]);
-            }
+                    subtitleBlockList[currentBlock].shown = true;
+                }
 
-            if (clock >= 5f && clock <= 9f)
-            {
-                SetSubtitleText(bancolegenda[2]);
-            }
+                if (clock >= subtitleBlockList[currentBlock].EndTime)
+                {
+                    SetSubtitleText(string.Empty);
 
-            if (clock >= 10f && clock <= 16f)
-            {
-                SetSubtitleText(bancolegenda[3]);
+                    currentBlock++;
+                }
             }
-
-            if (clock >= 17f && clock <= 21f)
+            else
             {
-                SetSubtitleText(bancolegenda[4]);
-            }
-
-            if (clock >= 22f && clock <= 23f)
-            {
-                SetSubtitleText(bancolegenda[5]);
-            }
-
-            if (clock >= 23.2f && clock <= 28f)
-            {
-                SetSubtitleText(bancolegenda[6]);
-            }
-
-            if (clock >= 29f && clock <= 31f)
-            {
-                SetSubtitleText(bancolegenda[7]);
-            }
-
-            if (clock >= 32f && clock <= 36f)
-            {
-                SetSubtitleText(bancolegenda[8]);
-            }
-
-            if (clock >= 36.1f && clock <= 40f)
-            {
-                SetSubtitleText(bancolegenda[9]);
-            }
-
-            if (clock >= 42.1f && clock <= 43f)
-            {
-                subtitleText.text = "";
+                //subtitles ended
             }
         }	
 	}
 
 	public void TagFound()
 	{
+        //parses .srt and creates subtitle blocks
+        StartSubtitleBlockCreation(subtitlesFilename);
+
         //show movie start message
-        messageArea.gameObject.SetActive(true);
-		messageText.text = startMessage;
-        
-		playSubtitles = false;        
+        messageController.ShowMessage(startMessage);
+
+        //clear subtitle player
+        ResetSubtitlePlayer();
+
+        playSubtitles = false;        
 	}
 
 	public void TagLost()
 	{
         //hide movie start message
-        messageArea.gameObject.SetActive(false);
-        messageText.text = string.Empty;
+        messageController.Hide();   
 
-        //initialize subtitles
-        InitializeSubtitlePlayer();
+        playSubtitles = true;  
+    }
 
-        playSubtitles = true;        
+    void Start()
+    {
+
+#if UNITY_EDITOR
+        subtitlesPath = "file:///" + Application.streamingAssetsPath + "/";
+#elif UNITY_ANDROID
+        subtitlesPath = "jar:file://" + Application.dataPath + "!/assets/";
+#endif
+
+        //initializes sub block list
+        subtitleBlockList = new List<SubtitleBlock>();
+
+        //for debugging
+        //parses .srt and creates subtitle blocks
+        StartSubtitleBlockCreation(subtitlesFilename);
     }
 }

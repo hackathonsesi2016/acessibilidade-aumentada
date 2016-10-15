@@ -1,7 +1,7 @@
-00:00:00,1-->00:00:00,5
+00:00:00.1-->00:00:00.5
 Júlia: [Suspiro]
 
-00:00:01,1-->00:00:04
+00:00:01.1-->00:00:04
 Assim eu não vou morrer porque não tá passando um filme da minha vida ainda.
 
 00:00:05-->00:00:09
@@ -16,7 +16,7 @@ Isso pra mim foi definitivo porque...
 00:00:22-->00:00:23
 [choro] 
 
-00:00:23,2-->00:00:28
+00:00:23.2-->00:00:28
 Quando eu acordei que eu não morri, eu pensei assim...
 
 00:00:29-->00:00:31
@@ -25,5 +25,5 @@ Porra! Tem um nenem no berço...
 00:00:32-->00:00:36
 [choro] 
 
-00:00:36,1-->00:00:40
+00:00:36.1-->00:00:40
 E aí... Acho que isso pra mim foi a minha salvação.
