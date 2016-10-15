@@ -32,6 +32,9 @@ oferece sincronia da legenda com o vídeo feita por tag,mas para projeto final f
                 
             # Apresentação no Prezi
             https://prezi.com/fskklo34ggku
+
+            # .apk da aplicação e vídeo de exemplo
+            https://drive.google.com/open?id=0B7YEx_U3o_86X0tTZndRZFBQaTg
                 
             #   referências:www.youtube.com/watch?v=pMR91nDzCs
                                       https://www.youtube.com/watch?v=rzkWlh3DA8I
