@@ -9,7 +9,7 @@ public class SubtitleManager : MonoBehaviour
     private string subtitlesPath;
 
     [SerializeField]
-    private string subtitlesFilename;
+    private List<string> subtitleFilenameList;
 
     [SerializeField]
     private MessageController messageController;
@@ -23,12 +23,27 @@ public class SubtitleManager : MonoBehaviour
 	private double clock;
     private int currentBlock;
 
+    private int currentSubtitleIndex = 0;
+
     [SerializeField]
     private bool playSubtitles = false;
 
     private bool waitingForNextBlock = false;
 
-	private void SetSubtitleText(string text)
+    public void ToggleSubtitlesFile()
+    {
+        currentSubtitleIndex = currentSubtitleIndex == subtitleFilenameList.Count - 1 ? 0 : currentSubtitleIndex + 1;
+
+        SetSubtitleText(string.Empty);
+
+        subtitleBlockList.Clear();
+
+        StartSubtitleBlockCreation(subtitleFilenameList[currentSubtitleIndex]);
+
+        FindCurrentSubtitleBlock();
+    }
+
+    private void SetSubtitleText(string text)
     {
         subtitleText.text = text;
     }
@@ -37,7 +52,8 @@ public class SubtitleManager : MonoBehaviour
     {
         clock = 0;
         currentBlock = 0;
-        SetSubtitleText(string.Empty);        
+        SetSubtitleText(string.Empty);
+        subtitleBlockList.Clear();       
     }
 
     private void FindCurrentSubtitleBlock()
@@ -135,14 +151,14 @@ public class SubtitleManager : MonoBehaviour
 
 	public void TagFound()
 	{
-        //parses .srt and creates subtitle blocks
-        StartSubtitleBlockCreation(subtitlesFilename);
-
-        //show movie start message
-        messageController.ShowMessage(startMessage);
-
         //clear subtitle player
         ResetSubtitlePlayer();
+
+        //parses .srt and creates subtitle blocks
+        StartSubtitleBlockCreation(subtitleFilenameList[currentSubtitleIndex]);
+
+        //show movie start message
+        messageController.ShowMessage(startMessage);        
 
         playSubtitles = false;        
 	}
@@ -167,8 +183,10 @@ public class SubtitleManager : MonoBehaviour
         //initializes sub block list
         subtitleBlockList = new List<SubtitleBlock>();
 
+#if UNITY_EDITOR
         //for debugging
-        //parses .srt and creates subtitle blocks
-        StartSubtitleBlockCreation(subtitlesFilename);
+        //creates subtitles block without tag
+        StartSubtitleBlockCreation(subtitleFilenameList[currentSubtitleIndex]);
+#endif
     }
 }

@@ -7,7 +7,7 @@ using System.Linq;
 public static class SrtParser
 {
     public const string blockRegexPattern = @"[\r\n](?=\d)";
-    public const string timeRegexPattern = @"\d+\:\d+\:\d+(\,\d+)?";
+    public const string timeRegexPattern = @"\d+\:\d+\:\d+(\.\d+)?";
 
     public static string[] GetSubtitleBlocks(string rawSrt)
     {
@@ -22,6 +22,9 @@ public static class SrtParser
 
         double startTime, endTime;
         double[] times = new double[2];
+
+        //startTime = TimeSpan.Parse(regexMatches[0]).TotalMilliseconds / 1000;
+        //endTime = TimeSpan.Parse(regexMatches[1]).TotalMilliseconds / 1000;
 
         startTime = TimeSpan.Parse(regexMatches[0]).TotalSeconds;
         endTime = TimeSpan.Parse(regexMatches[1]).TotalSeconds;
