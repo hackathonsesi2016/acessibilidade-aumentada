@@ -9,6 +9,9 @@ public class SubtitleManager : MonoBehaviour
     private string subtitlesPath;
 
     [SerializeField]
+    private SignVideoController signVideoController;
+
+    [SerializeField]
     private List<string> subtitleFilenameList;
 
     [SerializeField]
@@ -144,7 +147,7 @@ public class SubtitleManager : MonoBehaviour
             }
             else
             {
-                //subtitles ended
+                signVideoController.Reset(true);
             }
         }	
 	}
